@@ -8,6 +8,7 @@
 #include <fstream>
 #include <memory>
 #include <vector>
+#include <cstdarg>
 
 using uint = unsigned int;
 
