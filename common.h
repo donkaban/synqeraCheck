@@ -22,8 +22,8 @@ static float trace(F && f, A &&... args)
 } 
 struct timer
 {
-public:	
- 	static float get() 
+public: 
+    static float get() 
     {
         std::chrono::duration<float> dt(std::chrono::system_clock::now() - start_time);
         return dt.count();
@@ -31,7 +31,7 @@ public:
     static std::string timestamp();
 
 private:
-	static std::chrono::time_point<std::chrono::system_clock> start_time;
+    static std::chrono::time_point<std::chrono::system_clock> start_time;
 };
 
 template<class T>
@@ -45,31 +45,31 @@ void replace(T& src, const T& find, const T& replace)
 
 class logger
 {
-public:	
-	logger(const std::string &);
-	~logger();
-	template<typename ... T>
+public: 
+    logger(const std::string &);
+    ~logger();
+    template<typename ... T>
     void message(const char* fmt, T && ... args)
     {
-    	auto msg = format(fmt, args...);
-       	std::cout << msg << std::endl;
-    	logfile << msg << std::endl;
+        auto msg = format(fmt, args...);
+        std::cout << msg << std::endl;
+        logfile << msg << std::endl;
     }
-	template<typename ... T>
+    template<typename ... T>
     static void info(const char* fmt, T && ... args)
     {
-    	 logger::auxlog->message(fmt,args...);
+         logger::auxlog->message(fmt,args...);
     }
-	template<typename ... T>
-	static void fatal(const char* fmt, T && ... args)
+    template<typename ... T>
+    static void fatal(const char* fmt, T && ... args)
     {
-  	 	logger::auxlog->message(fmt,args...);
-    	exit(-1);
+        logger::auxlog->message(fmt,args...);
+        exit(-1);
     }
 private:
-	std::string format(const char *,...);
-	static std::shared_ptr<logger> auxlog;
-	std::ofstream   			   logfile;
+    std::string format(const char *,...);
+    static std::shared_ptr<logger> auxlog;
+    std::ofstream                  logfile;
 };
 
 

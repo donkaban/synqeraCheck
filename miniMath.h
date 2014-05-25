@@ -25,7 +25,7 @@ public:
     };
        
     vec(const float _x = 0, const float _y = 0 ,const float _z = 0) : 
-    	x(_x), y(_y),z(_z)
+        x(_x), y(_y),z(_z)
     {}
     vec(std::initializer_list<float> l) 
     {
