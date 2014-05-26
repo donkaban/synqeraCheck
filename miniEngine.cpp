@@ -152,8 +152,8 @@ int getInt(const GLenum &e) {GLint val = 0; glGetIntegerv(e, &val); return val;}
 
 
 #define GET_GLX(e) logger::info("[OK    ] %s : %s",#e, glXGetClientString(data.display,e)) 
-#define GET_INT(e) logger::info("[%s] %s : %d",_err().c_str(), #e, getInt(e)); 
-#define GET_STR(e) logger::info("[%s] %s : %s",_err().c_str(), #e, glGetString(e)); 
+#define GET_INT(e) {auto r = getInt(e) ;    logger::info("[%s] %s : %d",_err().c_str(), #e,r);} 
+#define GET_STR(e) {auto r = glGetString(e);logger::info("[%s] %s : %s",_err().c_str(), #e,r);} 
 
 void miniEngine::getOGLInfo()
 {
