@@ -20,13 +20,6 @@
     #error not defined HOST_LINUX or HOST_MACOS
 #endif
 
-static void GLASSERT(const std::string & where = "somethere over the rainbow...")
-{
-    auto err = glGetError();
-    if(GL_NO_ERROR != err)
-        logger::info("OpenGL error %d in %s",err,where.c_str());
-}
-
 std::string vertex_base = R"(
 attribute vec3 pos;
 attribute vec2 uv;
@@ -39,7 +32,11 @@ void main()
     v_uv = uv;
     gl_Position = vec4(pos,1) * mView * projection;
 })";
-
+static std::string _err()
+{
+    auto res = (GL_NO_ERROR == glGetError()) ? "OK    " : "FAILED";
+    return res;
+}
 static struct 
 {
     Display  * display;
@@ -115,7 +112,7 @@ miniEngine::miniEngine()
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     data.camera = mat::perspective(45,(float)width/(float)height, 0.1, 100);
-    GLASSERT("OpenGL init");
+    logger::info("create mini engine ... %s",_err().c_str());
 }
 
 bool miniEngine::update()
@@ -140,7 +137,6 @@ bool miniEngine::update()
     auto currTime = timer::get();
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     if(onUpdate) onUpdate(currTime-deltaTime);
-    GLASSERT("update");
     glXSwapBuffers(data.display,data.window);
     deltaTime = currTime;
     return true;
@@ -154,9 +150,10 @@ void miniEngine::getX11Info()
 
 int getInt(const GLenum &e) {GLint val = 0; glGetIntegerv(e, &val); return val;}
 
-#define GET_INT(e) logger::info("%s : %d",#e, getInt(e)); GLASSERT(#e)
-#define GET_STR(e) logger::info("%s : %s",#e, glGetString(e)); GLASSERT(#e)
-#define GET_GLX(e) logger::info("%s : %s",#e, glXGetClientString(data.display,e)) ;GLASSERT(#e)
+
+#define GET_GLX(e) logger::info("[OK    ] %s : %s",#e, glXGetClientString(data.display,e)) 
+#define GET_INT(e) logger::info("[%s] %s : %d",_err().c_str(), #e, getInt(e)); 
+#define GET_STR(e) logger::info("[%s] %s : %s",_err().c_str(), #e, glGetString(e)); 
 
 void miniEngine::getOGLInfo()
 {
@@ -165,47 +162,52 @@ void miniEngine::getOGLInfo()
     auto glx_ext = std::string(glXGetClientString(data.display,GLX_EXTENSIONS));
     replace<std::string>(ogl_ext, " ","\n    "); ogl_ext = "    " + ogl_ext;
     replace<std::string>(glx_ext, " ","\n    "); glx_ext = "    " + glx_ext;
+    GET_GLX(GLX_VENDOR); 
+    GET_GLX(GLX_VERSION);
     GET_STR(GL_VENDOR); 
     GET_STR(GL_VERSION); 
     GET_STR(GL_RENDERER);  
     GET_STR(GL_SHADING_LANGUAGE_VERSION); 
-    GET_GLX(GLX_VENDOR); 
-    GET_GLX(GLX_VERSION);
+    GET_INT(GL_SHADER_COMPILER);
+    GET_INT(GL_ALPHA_BITS);
+    GET_INT(GL_DEPTH_BITS);
+    GET_INT(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
     GET_INT(GL_MAX_TEXTURE_BUFFER_SIZE);
     GET_INT(GL_MAX_TEXTURE_IMAGE_UNITS);
     GET_INT(GL_MAX_TEXTURE_SIZE);
-    GET_INT(GL_MAX_VARYING_COMPONENTS);
-    GET_INT(GL_MAX_RECTANGLE_TEXTURE_SIZE);
-    GET_INT(GL_MAX_VARYING_COMPONENTS); 
-    GET_INT(GL_CONTEXT_FLAGS);
-    GET_INT(GL_DOUBLEBUFFER);
-    GET_INT(GL_MAX_3D_TEXTURE_SIZE);
-    GET_INT(GL_MAX_ARRAY_TEXTURE_LAYERS);
-    GET_INT(GL_MAX_COLOR_TEXTURE_SAMPLES);
-    GET_INT(GL_MAX_COMBINED_UNIFORM_BLOCKS);
-    GET_INT(GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS);
     GET_INT(GL_MAX_CUBE_MAP_TEXTURE_SIZE);
+    GET_INT(GL_NUM_COMPRESSED_TEXTURE_FORMATS);
+    GET_INT(GL_NUM_SHADER_BINARY_FORMATS);
+    GET_INT(GL_PACK_ALIGNMENT);
+    GET_INT(GL_SAMPLE_BUFFERS);
+    GET_INT(GL_MAX_RENDERBUFFER_SIZE);
+    GET_INT(GL_MAX_VARYING_VECTORS); 
+    GET_INT(GL_MAX_VERTEX_ATTRIBS);
+    GET_INT(GL_MAX_VERTEX_UNIFORM_VECTORS);
+    GET_INT(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS);
+    GET_INT(GL_MAX_VIEWPORT_DIMS);
+    GET_INT(GL_MINOR_VERSION);
     GET_INT(GL_MAX_DRAW_BUFFERS);
     GET_INT(GL_MAX_ELEMENTS_INDICES);
     GET_INT(GL_MAX_ELEMENTS_VERTICES);
     GET_INT(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS);
     GET_INT(GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS);
     GET_INT(GL_MAX_GEOMETRY_UNIFORM_BLOCKS);
-    GET_INT(GL_MAX_RENDERBUFFER_SIZE);
     GET_INT(GL_MAX_SERVER_WAIT_TIMEOUT);
     GET_INT(GL_MAX_VARYING_FLOATS);
-    GET_INT(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS);
     GET_INT(GL_MAX_VIEWPORTS);
-    GET_INT(GL_MINOR_VERSION);
-    GET_INT(GL_NUM_COMPRESSED_TEXTURE_FORMATS);
-    GET_INT(GL_NUM_EXTENSIONS);
+    GET_INT(GL_MAX_VARYING_COMPONENTS);
+    GET_INT(GL_MAX_RECTANGLE_TEXTURE_SIZE);
+    GET_INT(GL_MAX_3D_TEXTURE_SIZE);
+    GET_INT(GL_MAX_ARRAY_TEXTURE_LAYERS);
+    GET_INT(GL_MAX_COLOR_TEXTURE_SAMPLES);
+    GET_INT(GL_MAX_COMBINED_UNIFORM_BLOCKS);
+    GET_INT(GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS);
     GET_INT(GL_NUM_PROGRAM_BINARY_FORMATS);
-    GET_INT(GL_NUM_SHADER_BINARY_FORMATS);
-    GET_INT(GL_PACK_ALIGNMENT);
-    GET_INT(GL_SAMPLE_BUFFERS);
+    GET_INT(GL_CONTEXT_FLAGS);
+    GET_INT(GL_DOUBLEBUFFER);
     logger::info("\nOpenGL extensions :\n\n%s", ogl_ext.c_str()); 
     logger::info("\nGLX extensions :\n\n%s", glx_ext.c_str()); 
-    GLASSERT("get info");
 }
 
 static void check(int id)
@@ -261,6 +263,7 @@ void material::bind()
     mv   = glGetUniformLocation(id,"mView");
     prj = glGetUniformLocation(id,"projection");
     time = glGetUniformLocation(id,"time");
+    logger::info("bind material %d ... %s",id,_err().c_str());
 }
 void material::unbind() {}
 GLuint material::getID() const {return id;}
@@ -284,13 +287,11 @@ void object::bind()
     glBufferData(GL_ARRAY_BUFFER, vertexes.size() * sizeof(float) , &vertexes[0], GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,id[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indecies.size() * sizeof(uint16_t), &indecies[0], GL_STATIC_DRAW);
-    GLASSERT("object::bind");
 }
 void object::unbind() 
 {
     glDeleteBuffers(2,id);
-    GLASSERT("object::unbind");
-} 
+}   
 
 void object::render() 
 {
@@ -306,7 +307,6 @@ void object::render()
     glEnableVertexAttribArray(_material->uv);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,id[1]);
     glDrawElements(GL_TRIANGLES, indecies.size(),GL_UNSIGNED_SHORT,0); 
-    GLASSERT("object::render");
 }
 void object::rotate(vec::ref r)    {_transform *= mat::rotate(DEG2RAD *r);}
 void object::translate(vec::ref t) {_transform *= mat::translate(t);}
@@ -316,7 +316,6 @@ void object::transform(mat::ref t) {_transform = t;}
 
 vec      object::position()  const  {return _transform.position();} 
 mat::ref object::transform() const  {return _transform;}
-
 
 object::ptr object::createSphere(float radius, int slices, material::cref m)
 {
